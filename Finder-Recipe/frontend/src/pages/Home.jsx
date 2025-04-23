@@ -66,7 +66,7 @@ const Home = () => {
           Simply input your available ingredients, select dietary preferences,
           and let our AI create unique and delicious recipes just for you.
         </p>
-        <Link to="/get-started" className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2 rounded-full text-sm shadow-md">
+        <Link to="/login" className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2 rounded-full text-sm shadow-md">
           Get started
         </Link>
       </div>
