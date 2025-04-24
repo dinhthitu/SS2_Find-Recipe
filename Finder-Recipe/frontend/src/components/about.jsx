@@ -22,6 +22,7 @@ const about = () => {
           <Link to="/product" className="hover:text-purple-600">Product</Link>
           <Link to="/features" className="hover:text-purple-600">Features</Link>
           <Link to="/about" className="hover:text-purple-600">About</Link>
+          <Link to="/SearchRecipes" className="hover:text-purple-600">Search</Link>
         </div>
 
         <div className="hidden md:flex gap-6 text-sm font-medium flex-row">
