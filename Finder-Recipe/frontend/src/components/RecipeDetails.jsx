@@ -92,7 +92,7 @@ const RecipeDetails = () => {
             <img src={recipe.image} alt={recipe.title} className="w-full h-64 object-cover rounded-lg mb-6" />
 
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Ingredients</h2>
+              <h2 className="text-2xl font-bold mb-4 text-center p-4">Ingredients</h2>
               <ul className="list-disc list-inside text-gray-700">
                 {recipe.extendedIngredients.map((ingredient) => (
                   <li key={ingredient.id} className="mb-2">
@@ -102,8 +102,8 @@ const RecipeDetails = () => {
               </ul>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Instructions</h2>
+            <div className="mb-15">
+              <h2 className="text-2xl font-bold mb-4 text-center p-4">Instructions</h2>
               {recipe.instructions ? (
                 <div
                   className="text-gray-700"
@@ -113,14 +113,15 @@ const RecipeDetails = () => {
                 <p className="text-gray-600">No instructions available.</p>
               )}
             </div>
-
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Nutrition</h2>
+            
+            {/* Nutrition */}
+            <div className="mb-8 bg-[#FFF3F3] rounded-md">
+              <h2 className="text-2xl font-bold mb-4 text-center p-4">NUTRITION</h2>
               {recipe.nutrition?.nutrients ? (
-                <ul className="text-gray-700">
+                <ul className="text-gray-700 grid grid-cols-2 m-7 list-disc list-inside">
                   {recipe.nutrition.nutrients.map((nutrient) => (
                     <li key={nutrient.name} className="mb-2">
-                      {nutrient.name}: {nutrient.amount} {nutrient.unit}
+                     {nutrient.name}: {nutrient.amount} {nutrient.unit}
                     </li>
                   ))}
                 </ul>
@@ -129,15 +130,89 @@ const RecipeDetails = () => {
               )}
             </div>
 
-            <Link
-              to="/SearchRecipes"
-              className="px-4 py-2 bg-gray-600 text-white rounded-full text-sm font-semibold hover:bg-gray-700"
-            >
-              Back to Search
-            </Link>
+            {/* Review Section */}
+            <div className="mb-3 p-4">
+              <h2 className="text-3xl font-bold mb-6 text-center">REVIEW</h2>
+              <div className="mb-4 border-15 border-gray-200 p-5">
+                <p className = "text-center font-bold text-xl p-3">{recipe.title}</p>
+                <div className = "flex flex-row space-x-1">
+                <label className="block text-gray-900 font-bold mb-2 text-xl">My Rating</label>
+                <p className = "text-gray-700 mb-2 mt-1 ">(required)</p>
+                </div>
+                
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, index) => (
+                    <span key={index} className="text-2xl cursor-pointer">
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <div className = "mt-2">
+                <label className="block text-gray-900 font-bold text-xl mb-2">My Review</label>
+                <textarea
+                  className="w-full h-24 p-2 border border-gray-300 rounded-lg"
+                  placeholder="What do you think about this recipe ?"
+                ></textarea>
+                </div>
+                
+                <div className="flex gap-2 mt-3 justify-end">
+                <button className="px-3 py-1 bg-gray-400 text-white rounded-lg">Cancel</button>
+                <button className="px-3 py-1 bg-[#F9B700] text-white rounded-lg">Submit</button>
+              </div>
+              </div>
+              
+            </div>
+
+            {/* Explore More Recipes Button */}
+            <div className="text-center mb-15">
+              <Link
+                to="/SearchRecipes"
+                className="px-6 py-3 bg-[#F9B700] text-white rounded-lg text-sm font-semibold hover:bg-yellow-600"
+              >
+                Explore More Recipes
+              </Link>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-[#531A27] text-white py-8 px-4">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-4 ">
+            <h2 className="text-5xl font-extrabold font-serif">Discover.</h2>
+            <h2 className="text-5xl font-extrabold font-serif text-[#EECED0] ">Create.</h2>
+            <h2 className="text-5xl font-extrabold font-serif text-[#C54F6A]">Savor.</h2>
+
+          </div>
+          <div className="flex flex-col gap-3">
+
+             <p className="mt-2">Empowering you to find, customize, and cherish every recipe with ease.</p>
+             <div className = "flex flex-row space-x-2">
+              <Link to="/about" className="hover:underline">Home | </Link>
+              <Link to="/about" className="hover:underline">About Us | </Link>
+              <Link to="/favorites" className="hover:underline">My Favorites | </Link>
+              <Link to="/products" className="hover:underline">Products </Link>
+             </div>
+            
+            <div className="">
+              <p className="mb-2">Contact Us</p>
+              <div className="flex gap-2 mt-3">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className="px-4 py-2 rounded-lg bg-gray-500 opacity-30 "
+                />
+                <button className="px-3 py-2 bg-white text-[#4A2C2A] rounded-lg">Subscribe</button>
+              </div>
+          </div>
+          </div>
+          
+        </div>
+        <p className="text-center mt-4 text-sm">
+          © 2025 Personalized Recipe Finder & Collection Manager. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
