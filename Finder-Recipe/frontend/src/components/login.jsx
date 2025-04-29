@@ -14,15 +14,38 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleAuthSuccess = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('user', JSON.stringify(data));
+        console.log('Backend login successful:', data);
+        navigate(data.role === 'admin' ? '/admin' : '/');
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error('Backend login error:', error);
+      setError(error.message);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log(user);
-      navigate('/');
+      await handleAuthSuccess(user);
     } catch (error) {
       console.error(error);
-      setError(error.message);
+      setError(error.code === 'auth/popup-closed-by-user' ? 'Google sign-in was cancelled.' : error.message);
     }
   };
 
@@ -32,18 +55,29 @@ const Login = () => {
     setError(null);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        email, 
-        password
-      );
-      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log('Email login successful:', user);
-      navigate('/');
+      await handleAuthSuccess(user);
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message);
+      let errorMessage = 'An error occurred during login.';
+      switch (error.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email format.';
+          break;
+        case 'auth/invalid-credential':
+          errorMessage = 'Invalid email or password.';
+          break;
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email.';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Incorrect password.';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -55,7 +89,6 @@ const Login = () => {
         <h1 className="text-3xl text-center font-semibold mb-1">Login</h1>
         <span className="text-sm text-gray-400 text-center mt-2">Welcome to our website</span>
         
-        {/* Error Message */}
         {error && (
           <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
             {error}
@@ -80,7 +113,7 @@ const Login = () => {
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <div className="space-y-4">
           <div>
             <p className="text-gray-500 text-left mb-1">Email</p>
             <input 
@@ -106,7 +139,7 @@ const Login = () => {
           </div>
 
           <button 
-            type="submit"
+            onClick={handleSubmit}
             disabled={loading}
             className={`border rounded-full w-full py-2 px-4 mt-4 bg-purple-600 text-white font-semibold cursor-pointer hover:bg-purple-500 transition ${
               loading ? 'opacity-70 cursor-not-allowed' : ''
@@ -114,7 +147,7 @@ const Login = () => {
           >
             {loading ? 'Logging in...' : 'Continue'}
           </button>
-        </form>
+        </div>
 
         <span className="text-gray-400 font-normal text-center mt-5">
           No account? <Link to="/signup" className="text-purple-600 font-medium">Create an account</Link>

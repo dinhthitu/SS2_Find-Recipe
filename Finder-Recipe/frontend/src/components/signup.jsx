@@ -15,15 +15,39 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleAuthSuccess = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('user', JSON.stringify(data));
+        localStorage.setItem('username', username);
+        console.log('Backend signup successful:', data);
+        navigate(data.role === 'admin' ? '/admin' : '/');
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error('Backend signup error:', error);
+      setError(error.message);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log('Google sign-up successful:', user);
-      navigate('/');
+      await handleAuthSuccess(user);
     } catch (error) {
       console.error('Google sign-up error:', error);
-      setError(error.message);
+      setError(error.code === 'auth/popup-closed-by-user' ? 'Google sign-up was cancelled.' : error.message);
     }
   };
 
@@ -33,24 +57,26 @@ const Signup = () => {
     setError(null);
 
     try {
-      // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        email, 
-        password
-      );
-      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log('Email sign-up successful:', user);
-      
-      // Here you would typically save the username to your database
-      // For now, we'll just store it in localStorage
-      localStorage.setItem('username', username);
-      
-      navigate('/'); // Redirect to home after successful signup
+      await handleAuthSuccess(user);
     } catch (error) {
       console.error('Signup error:', error);
-      setError(error.message);
+      let errorMessage = 'An error occurred during signup.';
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'This email is already in use. Please use a different email or login.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email format.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password should be at least 6 characters.';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -62,7 +88,6 @@ const Signup = () => {
         <h1 className="text-3xl text-center font-semibold mb-1">Sign up</h1>
         <span className="text-sm text-gray-400 text-center mt-2">Welcome to our website</span>
         
-        {/* Google Sign-In Button */}
         <button 
           onClick={handleGoogleSignIn}
           className="w-full flex items-center justify-center gap-2 mt-4 bg-gray-100 text-gray-700 border border-gray-300 rounded-md py-2 mb-4 hover:bg-gray-200 transition cursor-pointer"
@@ -81,14 +106,13 @@ const Signup = () => {
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
             {error}
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <div className="space-y-4">
           <div>
             <p className="text-gray-500 text-left mb-1">Email</p>
             <input 
@@ -127,7 +151,7 @@ const Signup = () => {
           </div>
 
           <button 
-            type="submit"
+            onClick={handleSubmit}
             disabled={loading}
             className={`border rounded-full w-full py-2 px-4 mt-4 bg-purple-600 text-white font-semibold cursor-pointer hover:bg-purple-700 transition ${
               loading ? 'opacity-70 cursor-not-allowed' : ''
@@ -135,7 +159,7 @@ const Signup = () => {
           >
             {loading ? 'Creating account...' : 'Continue'}
           </button>
-        </form>
+        </div>
 
         <span className="text-gray-400 font-normal text-center mt-5">
           Have an account? <Link to="/login" className="text-purple-600 font-medium">Login</Link>
