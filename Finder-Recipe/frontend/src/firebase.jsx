@@ -4,7 +4,8 @@ import {
   GoogleAuthProvider, 
   signInWithPopup,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  sendEmailVerification
 } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
@@ -28,5 +29,6 @@ export {
   provider, 
   signInWithPopup,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  sendEmailVerification
 };
