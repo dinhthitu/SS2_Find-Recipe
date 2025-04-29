@@ -1,21 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.jpeg";
 import moreIcon from "../assets/more.png";
 import closeIcon from "../assets/delete.png";
 import arrowIcon from "../assets/arrow.png";
+import SearchBackGround from "../assets/SearchBackGround.png";
 
 const SearchRecipes = () => {
   const [searchValue, setSearchValue] = useState("");
   const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const searchRef = useRef(null);
 
-  const apiKey = "4d907507d3444003a838e03417bb13c4";
+  const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
   const searchRecipes = async () => {
     if (!searchValue.trim()) {
-      setError("Please enter at least one ingredient.");
+      setError("Please enter at least one ingredient or dish name.");
       setRecipes([]);
       return;
     }
@@ -41,12 +43,27 @@ const SearchRecipes = () => {
   };
 
   const popularIngredients = [
-    "chicken", "beef", "rice", "pasta", "tomato", "cheese", "potato", "egg", "onion", "garlic"
+    "tomato", "pork", "onion", "carrot", "scallop", "potato", "vegetarian", "vegan"
+  ];
+
+  const recommendedRecipes = [
+    { id: 1, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 2, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 3, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 4, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 5, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 6, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 7, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
+    { id: 8, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
   ];
 
   const handleIngredientClick = (ingredient) => {
     setSearchValue(ingredient);
     searchRecipes();
+  };
+
+  const handleTryNowClick = () => {
+    searchRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -93,41 +110,60 @@ const SearchRecipes = () => {
 
       {/* Header Section */}
       <div
-        className="w-full h-64 bg-cover bg-center flex flex-col items-center justify-center text-white"
+        className="w-full h-[500px] bg-cover bg-center flex items-center justify-start text-[#8c0e2c] px-16 relative"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          backgroundBlendMode: "overlay"
+          backgroundImage: `url(${SearchBackGround})`,
         }}
       >
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">Create Magic from Simple Ingredients</h1>
-        <p className="text-sm md:text-base max-w-2xl text-center">
-          No need to scroll endlessly for dinner ideas. Just tell us what you have, we’ll inspire you with recipes that turn ordinary ingredients into extraordinary meals.
-        </p>
+        <div className="flex flex-col items-start max-w-lg">
+          <h1 className="text-5xl md:text-6xl font-bold font-serif mb-3 text-left leading-snug">
+            Create Magic<br />from Simple Ingredients
+          </h1>
+          <p className="text-base text-left font-sans leading-relaxed text-[#1c0e0e] mb-4">
+            No need to scroll endlessly for dinner ideas – just tell us what you have,
+            and we’ll inspire you with recipes that turn ordinary ingredients into extraordinary meals.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleTryNowClick}
+              className="px-8 py-3 bg-[#a81a10] text-white rounded-full font-semibold text-sm hover:bg-[#c46570] transition"
+            >
+              Try Now
+            </button>
+            <Link
+              to="/about"
+              className="px-8 py-3 border border-[#961108] text-[#9b0a00] rounded-full font-semibold text-sm hover:bg-[#ad6560] hover:text-white transition"
+            >
+              About Us
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center p-8">
-        <h2 className="text-3xl font-bold mb-4 text-gray-800">Find Recipes by Ingredients</h2>
-        <p className="text-gray-600 mb-6 text-center">Type in the ingredients you have and discover amazing recipes!</p>
-
-        <div className="flex w-full max-w-xl mb-8">
-          <div className="relative w-full">
-            <input
-              type="text"
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-700 placeholder-gray-400"
-              placeholder="e.g., chicken, tomato, garlic"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-            <button
-              onClick={searchRecipes}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2"
-            >
-              <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </button>
+        {/* Search Section */}
+        <div ref={searchRef}>
+          <h2 className="text-3xl font-bold mb-4 text-gray-800">Find Your Recipe: By Ingredients or Dish Name</h2>
+          <p className="text-lg text-gray-500 text-center mb-4">Search by ingredients or dish names to explore delicious recipes!</p>
+          <div className="flex w-full max-w-2xl mb-8">
+            <div className="relative w-full">
+              <input
+                type="text"
+                className="w-full px-4 py-3 pr-12 border-2 border-pink-100 rounded-3xl focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                placeholder="e.g., chicken, tomato, garlic"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+              />
+              <button
+                onClick={searchRecipes}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2"
+              >
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -135,7 +171,7 @@ const SearchRecipes = () => {
 
         {/* Popular Ingredients */}
         <div className="w-full max-w-4xl mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Popular Ingredients</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">POPULAR INGREDIENTS</h3>
           <div className="flex flex-wrap gap-2">
             {popularIngredients.map((ingredient, index) => (
               <button
@@ -149,53 +185,127 @@ const SearchRecipes = () => {
           </div>
         </div>
 
-        {/* Recipes Grid */}
-        {recipes.length === 0 && !error ? (
-          <p className="text-gray-600 mb-6">Search for recipes using ingredients you have!</p>
-        ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl">
-            {recipes.map((recipe) => {
-              const nutrition = recipe.nutrition?.nutrients || [];
-              const calories = nutrition.find(n => n.name === "Calories")?.amount || "N/A";
-              const fat = nutrition.find(n => n.name === "Fat")?.amount || "N/A";
-              const carbs = nutrition.find(n => n.name === "Carbohydrates")?.amount || "N/A";
-
-              return (
-                <li
-                  key={recipe.id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                >
-                  <img
-                    src={recipe.image}
-                    alt={recipe.title}
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <Link
-                        to={`/recipe/${recipe.id}`}
-                        className="px-4 py-2 bg-yellow-400 text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
-                      >
-                        See Recipe
-                      </Link>
-                      <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
-                        <span className="text-sm">12</span>
-                      </button>
-                    </div>
+        {/* Recommended Recipes */}
+        <div className="w-full max-w-6xl mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">RECOMMENDED RECIPES</h3>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {recommendedRecipes.map((recipe) => (
+              <li
+                key={recipe.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                <img
+                  src={recipe.image}
+                  alt={recipe.title}
+                  className="w-full h-40 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Approx. {recipe.calories} calories per serving, {recipe.fat}g fat, {recipe.carbs}g carbs.
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <Link
+                      to={`/recipe/${recipe.id}`}
+                      className="px-4 py-2 bg-[#F9B700] text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
+                    >
+                      See Recipe
+                    </Link>
+                    <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                      <span className="text-sm">9</span>
+                    </button>
                   </div>
-                </li>
-              );
-            })}
+                </div>
+              </li>
+            ))}
           </ul>
+        </div>
+
+        {/* Recipes Grid (for search results) */}
+        {recipes.length > 0 && (
+          <>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">SEARCH RESULTS</h3>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl">
+              {recipes.map((recipe) => {
+                const nutrition = recipe.nutrition?.nutrients || [];
+                const calories = nutrition.find(n => n.name === "Calories")?.amount || "N/A";
+                const fat = nutrition.find(n => n.name === "Fat")?.amount || "N/A";
+                const carbs = nutrition.find(n => n.name === "Carbohydrates")?.amount || "N/A";
+
+                return (
+                  <li
+                    key={recipe.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <img
+                      src={recipe.image}
+                      alt={recipe.title}
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <Link
+                          to={`/recipe/${recipe.id}`}
+                          className="px-4 py-2 bg-[#F9B700] text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
+                        >
+                          See Recipe
+                        </Link>
+                        <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                          </svg>
+                          <span className="text-sm">9</span>
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-[#531A27] text-white py-8 px-4">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-4">
+            <h2 className="text-5xl font-extrabold font-serif">Discover.</h2>
+            <h2 className="text-5xl font-extrabold font-serif text-[#EECED0]">Create.</h2>
+            <h2 className="text-5xl font-extrabold font-serif text-[#C54F6A]">Savor.</h2>
+          </div>
+          <div className="flex flex-col gap-3">
+            <p className="mt-2">Empowering you to find, customize, and cherish every recipe with ease.</p>
+            <div className="flex flex-row space-x-2">
+              <Link to="/about" className="hover:underline">Home | </Link>
+              <Link to="/about" className="hover:underline">About Us | </Link>
+              <Link to="/favorites" className="hover:underline">My Favorites | </Link>
+              <Link to="/products" className="hover:underline">Products</Link>
+            </div>
+            <div className="">
+              <p className="mb-2">Contact Us</p>
+              <div className="flex gap-2 mt-3">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className="px-4 py-3 rounded-lg bg-gray-500 opacity-30"
+                />
+                <button className="px-3 py-2 bg-white text-[#4A2C2A] rounded-lg">Subscribe</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p className="text-center mt-4 text-sm">
+          © 2025 Personalized Recipe Finder & Collection Manager. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
