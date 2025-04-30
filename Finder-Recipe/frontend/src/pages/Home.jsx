@@ -14,13 +14,13 @@ const Home = () => {
           <div className="flex items-center justify-between px-4 py-4 relative bg-white border-b border-gray-200">
             <div className="flex items-center gap-3">
               <img src={logo} alt="Logo" className="w-10 h-10" />
-              <span className="font-bold text-sm text-gray-800">SMART RECIPE GENERATOR</span>
+              <span className="font-bold text-sm text-gray-800">RECIPE FINDER</span>
             </div>
     
             <div className="hidden md:flex gap-6 text-sm font-medium">
               <Link to="/product" className="hover:text-gray-600">Product</Link>
               <Link to="/features" className="hover:text-gray-600">Features</Link>
-              <Link to="/about" className="hover:text-gray-600">About</Link>
+              <Link to="/AboutUs" className="hover:text-gray-600">About</Link>
               <Link to="/SearchRecipes" className="hover:text-gray-600">Search</Link>
             </div>
     
@@ -43,7 +43,7 @@ const Home = () => {
             <div className="fixed right-0 w-1/2 min-h-screen bg-white opacity-100 shadow-lg z-50 p-6 flex flex-col gap-4 font-bold transition-all duration-300 ease-in-out">
               <Link to="/product" className="block py-1 hover:text-gray-900">Product</Link>
               <Link to="/features" className="block py-1 hover:text-gray-900">Features</Link>
-              <Link to="/about" className="block py-1 hover:text-gray-900">About</Link>
+              <Link to="/AboutUs" className="block py-1 hover:text-gray-900">About</Link>
               <Link to="/login" className="block py-1 hover:text-gray-900">Login via Google</Link>
               <Link to="/SearchRecipes" className="block py-1 hover:text-gray-900">Search Recipe</Link>
             </div>

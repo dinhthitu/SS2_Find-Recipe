@@ -9,14 +9,12 @@ import people from "../assets/people.png";
 import heartIcon from "../assets/heart-icon.png";
 import share from "../assets/share.png";
 
-
 const RecipeDetails = () => {
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
   const [similarRecipes, setSimilarRecipes] = useState([]);
   const [error, setError] = useState("");
   const [showMenu, setShowMenu] = useState(false);
-  
 
   const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
@@ -50,7 +48,21 @@ const RecipeDetails = () => {
             setSimilarRecipes([]);
           } else {
             const similarData = await similarResponse.json();
-            setSimilarRecipes(similarData || []);
+            // Fetch nutrition info for each similar recipe
+            const similarRecipesWithNutrition = await Promise.all(
+              similarData.map(async (similarRecipe) => {
+                const nutritionResponse = await fetch(
+                  `https://api.spoonacular.com/recipes/${similarRecipe.id}/information?apiKey=${apiKey}&includeNutrition=true`
+                );
+                if (!nutritionResponse.ok) {
+                  console.warn(`Failed to fetch nutrition for recipe ${similarRecipe.id}`);
+                  return { ...similarRecipe, nutrition: { nutrients: [] } };
+                }
+                const nutritionData = await nutritionResponse.json();
+                return { ...similarRecipe, nutrition: nutritionData.nutrition };
+              })
+            );
+            setSimilarRecipes(similarRecipesWithNutrition || []);
           }
         } catch (similarErr) {
           console.warn("Error fetching similar recipes:", similarErr);
@@ -69,9 +81,9 @@ const RecipeDetails = () => {
 
   const handleShareClick = async () => {
     try {
-      const url = window.location.href; 
-      await navigator.clipboard.writeText(url); 
-      alert("Link copied!"); 
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      alert("Link copied!");
     } catch (err) {
       console.error("Failed to copy the link:", err);
       alert("Failed to copy the link. Please copy it manually.");
@@ -95,12 +107,12 @@ const RecipeDetails = () => {
       <div className="flex items-center justify-between px-4 py-4 relative bg-white border-b border-gray-200">
         <div className="flex items-center gap-3">
           <img src={logo} alt="Logo" className="w-10 h-10" />
-          <span className="font-bold text-sm text-gray-800">SMART RECIPE GENERATOR</span>
+          <span className="font-bold text-sm text-gray-800">RECIPE FINDER</span>
         </div>
         <div className="hidden md:flex gap-6 text-sm font-medium">
           <Link to="/product" className="hover:text-gray-600">Product</Link>
           <Link to="/features" className="hover:text-gray-600">Features</Link>
-          <Link to="/about" className="hover:text-gray-600">About</Link>
+          <Link to="/AboutUs" className="hover:text-gray-600">About</Link>
           <Link to="/SearchRecipes" className="hover:text-gray-600">Search</Link>
         </div>
         <div className="hidden md:flex gap-6 text-sm font-medium flex-row">
@@ -120,7 +132,7 @@ const RecipeDetails = () => {
             <div className="fixed right-0 w-1/2 min-h-screen bg-white shadow-lg z-50 p-6 flex flex-col gap-4 font-bold transition-all duration-300 ease-in-out">
               <Link to="/product" className="block py-1 hover:text-gray-600">Product</Link>
               <Link to="/features" className="block py-1 hover:text-gray-600">Features</Link>
-              <Link to="/about" className="block py-1 hover:text-gray-600">About</Link>
+              <Link to="/AboutUs" className="block py-1 hover:text-gray-600">About</Link>
               <Link to="/SearchRecipes" className="block py-1 hover:text-gray-600">Search</Link>
               <Link to="/login" className="block py-1 hover:text-gray-600">Login via Google</Link>
             </div>
@@ -129,34 +141,31 @@ const RecipeDetails = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center px-13 py-7 ">
+      <div className="flex-1 flex flex-col items-center px-13 py-7">
         {error && <p className="text-red-500 mb-6 bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
         {recipe && (
           <div className="w-full">
             {/* Header Section */}
-
-            
             <div className="w-full mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold font-serif text-[#000000] mb-4">
-                  {recipe.title}
-                </h1>
+              <h1 className="text-4xl md:text-5xl font-bold font-serif text-[#000000] mb-4">
+                {recipe.title}
+              </h1>
               <img
                 src={recipe.image || "https://via.placeholder.com/1440x400"}
                 alt={recipe.title}
                 className="w-full h-[400px] object-cover rounded-lg"
               />
               <div className="mt-6">
-                
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex gap-5 text-sm text-gray-600">
-                    <div className = "gap-1 flex flex-row">
-                      <img src={clock} className = "w-5 h-5" />
-                      <span >Total {recipe.readyInMinutes || 45} minutes</span>
+                    <div className="gap-1 flex flex-row">
+                      <img src={clock} className="w-5 h-5" />
+                      <span>Total {recipe.readyInMinutes || 45} minutes</span>
                     </div>
-                    <div className = "gap-1 flex flex-row">
-                      <img src={people} className = "w-5 h-5" />
+                    <div className="gap-1 flex flex-row">
+                      <img src={people} className="w-5 h-5" />
                       <span>Servings: {recipe.servings || 2} people</span>
-                      </div>
+                    </div>
                   </div>
                   <div className="flex gap-4">
                     <button className="flex items-center gap-1 text-gray-600 hover:text-red-600">
@@ -177,10 +186,7 @@ const RecipeDetails = () => {
 
             {/* Ingredients Section */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-[#B8324F] mb-4  p-3">Ingredients</h2>
-              {/* <p className="text-sm text-gray-600 mb-4">
-                If you want to add more taste, you can include optional ingredients like vanilla extract for a richer flavor.
-              </p> */}
+              <h2 className="text-3xl font-bold text-[#B8324F] mb-4 p-3">Ingredients</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {recipe.extendedIngredients?.map((ingredient) => (
                   <div key={ingredient.id} className="flex items-center gap-3">
@@ -203,17 +209,13 @@ const RecipeDetails = () => {
                 ))}
               </div>
             </div>
-          
 
-{/* Instructions Section */}
+            {/* Instructions Section */}
             <div className="mb-12 bg-[#F7F2EE] rounded-lg p-5 shadow-sm shadow-gray-400">
               <h2 className="text-3xl font-bold text-[#B8324F] mb-4">Instructions</h2>
               <ol className="space-y-4 text-gray-600">
                 {recipe.analyzedInstructions?.[0]?.steps?.map((step) => (
-                  <li
-                    key={step.number}
-                    className="flex items-start gap-3 py-2"
-                  >
+                  <li key={step.number} className="flex items-start gap-3 py-2">
                     <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#621829] text-white font-bold text-sm">
                       {step.number}
                     </span>
@@ -221,13 +223,12 @@ const RecipeDetails = () => {
                   </li>
                 )) || <p className="text-gray-600">No instructions available.</p>}
               </ol>
-              {/* <p className="text-sm text-gray-600 mt-4 italic">About 1-2 minutes on each side.</p> */}
             </div>
 
             {/* Nutrition Section */}
             <div className="mb-12 p-6 shadow-sm/30 shadow-gray-600">
               <h2 className="text-3xl font-bold text-[#B8324F] mb-7">Nutrition</h2>
-              <div className="grid grid-cols-5 xl:grid-cols-9 gap-4 ">
+              <div className="grid grid-cols-5 xl:grid-cols-9 gap-4">
                 <div className="text-center border-1 border-[#A6354E] rounded-lg p-2">
                   <p className="text-lg font-bold text-[#A6354E]">{calories} kcal</p>
                   <p className="text-sm text-gray-800">Calories</p>
@@ -250,61 +251,67 @@ const RecipeDetails = () => {
                 </div>
               </div>
             </div>
-            
 
             {/* Similar Recipes Section */}
             <div className="mb-12">
               <h2 className="text-4xl font-bold text-gray-800 mb-7 p-6">Similar Recipes</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {similarRecipes.map((similarRecipe) => (
-                  <div
-                    key={similarRecipe.id}
-                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                  >
-                    <img
-                      src={
-                        similarRecipe.id
-                          ? `https://spoonacular.com/recipeImages/${similarRecipe.id}-312x231.jpg`
-                          : "https://via.placeholder.com/300"
-                      }
-                      alt={similarRecipe.title}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        {similarRecipe.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <Link
-                          to={`/recipe/${similarRecipe.id}`}
-                          className="px-4 py-2 bg-[#F39AA7] text-gray-800 rounded-full text-sm font-semibold hover:bg-[#f3a4b0]"
-                        >
-                          See Recipe
-                        </Link>
-                        <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                {similarRecipes.map((similarRecipe) => {
+                  const nutrition = recipe.nutrition?.nutrients || [];
+                  const calories = nutrition.find(n => n.name === "Calories")?.amount || "N/A";
+                  const fat = nutrition.find(n => n.name === "Fat")?.amount || "N/A";
+                  const carbs = nutrition.find(n => n.name === "Carbohydrates")?.amount || "N/A";
+
+                  return (
+                    <div
+                      key={similarRecipe.id}
+                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col min-h-[340px]"
+                    >
+                      <img
+                        src={
+                          similarRecipe.id
+                            ? `https://spoonacular.com/recipeImages/${similarRecipe.id}-312x231.jpg`
+                            : "https://via.placeholder.com/300"
+                        }
+                        alt={similarRecipe.title}
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="p-4 flex flex-col flex-1">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2 overflow-hidden">
+                          {similarRecipe.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2 flex-1">
+                          Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
+                        </p>
+                        <div className="flex justify-between items-center mt-auto">
+                          <Link
+                            to={`/recipe/${similarRecipe.id}`}
+                            className="px-4 py-2 bg-[#F39AA7] text-gray-800 rounded-full text-sm font-semibold hover:bg-[#f3a4b0]"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                            ></path>
-                          </svg>
-                          <span className="text-sm">9</span>
-                        </button>
+                            See Recipe
+                          </Link>
+                          <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                              ></path>
+                            </svg>
+                            <span className="text-sm">9</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -332,18 +339,10 @@ const RecipeDetails = () => {
           <div className="flex flex-col gap-3">
             <p className="mt-2">Empowering you to find, customize, and cherish every recipe with ease.</p>
             <div className="flex flex-row space-x-2">
-              <Link to="/about" className="hover:underline">
-                Home |
-              </Link>
-              <Link to="/about" className="hover:underline">
-                About Us |
-              </Link>
-              <Link to="/favorites" className="hover:underline">
-             My Favorites |
-              </Link>
-              <Link to="/products" className="hover:underline">
-                Products
-              </Link>
+              <Link to="/about" className="hover:underline">Home | </Link>
+              <Link to="/AboutUs" className="hover:underline">About Us | </Link>
+              <Link to="/favorites" className="hover:underline">My Favorites | </Link>
+              <Link to="/products" className="hover:underline">Products</Link>
             </div>
             <div className="">
               <p className="mb-2">Contact Us</p>
