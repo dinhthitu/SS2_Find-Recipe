@@ -11,8 +11,12 @@ const SearchRecipes = () => {
   const [recipes, setRecipes] = useState([]);
   const [recommendedRecipes, setRecommendedRecipes] = useState([]);
   const [error, setError] = useState("");
+  const [errorRecommended, setErrorRecommended] = useState("");
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const searchRef = useRef(null);
+  const searchInputRef = useRef(null); // Thêm ref cho ô input
 
   const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
@@ -21,9 +25,12 @@ const SearchRecipes = () => {
     if (!searchValue.trim()) {
       setError("Please enter at least one ingredient or dish name.");
       setRecipes([]);
+      setLoadingSearch(false);
       return;
     }
 
+    setLoadingSearch(true);
+    setError("");
     try {
       const ingredients = searchValue.split(",").map(item => item.trim()).join(",");
       const response = await fetch(
@@ -36,20 +43,23 @@ const SearchRecipes = () => {
 
       const data = await response.json();
       setRecipes(data.results || []);
-      setError("");
     } catch (err) {
       setError("Failed to fetch recipes. Please try again later.");
       setRecipes([]);
       console.error(err);
+    } finally {
+      setLoadingSearch(false);
     }
   };
 
   // Lấy danh sách công thức ngẫu nhiên từ API Spoonacular
   useEffect(() => {
     const fetchRecommendedRecipes = async () => {
+      setLoadingRecommended(true);
+      setErrorRecommended("");
       try {
         const response = await fetch(
-          `https://api.spoonacular.com/recipes/random?number=8&apiKey=${apiKey}`
+          `https://api.spoonacular.com/recipes/random?number=8&apiKey=${apiKey}&includeNutrition=true`
         );
 
         if (!response.ok) {
@@ -59,8 +69,11 @@ const SearchRecipes = () => {
         const data = await response.json();
         setRecommendedRecipes(data.recipes || []);
       } catch (err) {
-        console.error("Failed to fetch recommended recipes:", err);
+        setErrorRecommended("Failed to fetch recommended recipes. Please try again later.");
         setRecommendedRecipes([]);
+        console.error("Failed to fetch recommended recipes:", err);
+      } finally {
+        setLoadingRecommended(false);
       }
     };
 
@@ -78,6 +91,7 @@ const SearchRecipes = () => {
 
   const handleTryNowClick = () => {
     searchRef.current.scrollIntoView({ behavior: "smooth" });
+    searchInputRef.current.focus(); // Focus vào ô input sau khi cuộn
   };
 
   return (
@@ -124,7 +138,7 @@ const SearchRecipes = () => {
 
       {/* Header Section */}
       <div
-        className="w-full h-[500px] bg-cover bg-center flex items-center justify-start text-[#8c0e2c] px-16 relative"
+        className="w-full h-[650px] bg-cover bg-center flex items-center justify-start text-[#8c0e2c] px-16 relative"
         style={{
           backgroundImage: `url(${SearchBackGround})`,
         }}
@@ -164,6 +178,7 @@ const SearchRecipes = () => {
             <div className="relative w-full">
               <input
                 type="text"
+                ref={searchInputRef} // Gắn ref vào ô input
                 className="w-full px-4 py-3 pr-12 border-2 border-pink-100 rounded-3xl focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
                 placeholder="e.g., chicken, tomato, garlic"
                 value={searchValue}
@@ -199,10 +214,14 @@ const SearchRecipes = () => {
           </div>
         </div>
 
-        {/* Search Results (Moved up) */}
-        {recipes.length > 0 && (
-          <>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">SEARCH RESULTS</h3>
+        {/* Search Results */}
+        <div className="w-full max-w-6xl mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">SEARCH RESULTS</h3>
+          {loadingSearch ? (
+            <p className="text-gray-600 text-center">Loading search results...</p>
+          ) : recipes.length === 0 && !error ? (
+            <p className="text-gray-600 text-center">No search results yet. Try searching for a recipe!</p>
+          ) : recipes.length > 0 ? (
             <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl">
               {recipes.map((recipe) => {
                 const nutrition = recipe.nutrition?.nutrients || [];
@@ -217,11 +236,11 @@ const SearchRecipes = () => {
                   >
                     <img
                       src={recipe.image || "https://via.placeholder.com/300"}
-                      alt={recipe.title}
+                      alt={recipe.title || "Recipe"}
                       className="w-full h-40 object-cover"
                     />
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title || "Untitled Recipe"}</h3>
                       <p className="text-sm text-gray-600 mb-2">
                         Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
                       </p>
@@ -244,53 +263,61 @@ const SearchRecipes = () => {
                 );
               })}
             </ul>
-          </>
-        )}
+          ) : null}
+        </div>
 
-        {/* Recommended Recipes (Moved down) */}
+        {/* Recommended Recipes */}
         <div className="w-full max-w-6xl mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">RECOMMENDED RECIPES</h3>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {recommendedRecipes.map((recipe) => {
-              const nutrition = recipe.nutrition?.nutrients || [];
-              const calories = nutrition?.find(n => n.name === "Calories")?.amount || "N/A";
-              const fat = nutrition?.find(n => n.name === "Fat")?.amount || "N/A";
-              const carbs = nutrition?.find(n => n.name === "Carbohydrates")?.amount || "N/A";
+          {loadingRecommended ? (
+            <p className="text-gray-600 text-center">Loading recommended recipes...</p>
+          ) : errorRecommended ? (
+            <p className="text-red-500 mb-6 bg-red-50 px-4 py-2 rounded-lg">{errorRecommended}</p>
+          ) : recommendedRecipes.length === 0 ? (
+            <p className="text-gray-600 text-center">No recommended recipes available.</p>
+          ) : (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {recommendedRecipes.map((recipe) => {
+                const nutrition = recipe.nutrition?.nutrients || [];
+                const calories = nutrition.find(n => n.name === "Calories")?.amount || "N/A";
+                const fat = nutrition.find(n => n.name === "Fat")?.amount || "N/A";
+                const carbs = nutrition.find(n => n.name === "Carbohydrates")?.amount || "N/A";
 
-              return (
-                <li
-                  key={recipe.id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                >
-                  <img
-                    src={recipe.image || "https://via.placeholder.com/300"}
-                    alt={recipe.title}
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <Link
-                        to={`/recipe/${recipe.id}`}
-                        className="px-4 py-2 bg-[#F9B700] text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
-                      >
-                        See Recipe
-                      </Link>
-                      <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
-                        <span className="text-sm">9</span>
-                      </button>
+                return (
+                  <li
+                    key={recipe.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <img
+                      src={recipe.image || "https://via.placeholder.com/300"}
+                      alt={recipe.title || "Recipe"}
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title || "Untitled Recipe"}</h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <Link
+                          to={`/recipe/${recipe.id}`}
+                          className="px-4 py-2 bg-[#F9B700] text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
+                        >
+                          See Recipe
+                        </Link>
+                        <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                          </svg>
+                          <span className="text-sm">9</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
 
