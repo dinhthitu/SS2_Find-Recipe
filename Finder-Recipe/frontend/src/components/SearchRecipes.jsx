@@ -10,13 +10,14 @@ const SearchRecipes = () => {
   const [searchValue, setSearchValue] = useState("");
   const [recipes, setRecipes] = useState([]);
   const [recommendedRecipes, setRecommendedRecipes] = useState([]);
+  const [suggestions, setSuggestions] = useState([]); // State cho gợi ý
   const [error, setError] = useState("");
   const [errorRecommended, setErrorRecommended] = useState("");
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const searchRef = useRef(null);
-  const searchInputRef = useRef(null); // Thêm ref cho ô input
+  const searchInputRef = useRef(null);
 
   const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
@@ -31,6 +32,7 @@ const SearchRecipes = () => {
 
     setLoadingSearch(true);
     setError("");
+    setSuggestions([]); // Ẩn gợi ý khi tìm kiếm
     try {
       const ingredients = searchValue.split(",").map(item => item.trim()).join(",");
       const response = await fetch(
@@ -49,6 +51,30 @@ const SearchRecipes = () => {
       console.error(err);
     } finally {
       setLoadingSearch(false);
+    }
+  };
+
+  // Hàm lấy gợi ý nguyên liệu
+  const fetchSuggestions = async (query) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.spoonacular.com/food/ingredients/autocomplete?query=${query}&number=5&apiKey=${apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSuggestions(data || []);
+    } catch (err) {
+      setSuggestions([]);
+      console.error("Failed to fetch suggestions:", err);
     }
   };
 
@@ -91,7 +117,19 @@ const SearchRecipes = () => {
 
   const handleTryNowClick = () => {
     searchRef.current.scrollIntoView({ behavior: "smooth" });
-    searchInputRef.current.focus(); // Focus vào ô input sau khi cuộn
+    searchInputRef.current.focus();
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    fetchSuggestions(value); // Gọi API gợi ý khi người dùng nhập
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchValue(suggestion.name);
+    setSuggestions([]); // Ẩn gợi ý
+    searchRecipes(); // Tự động tìm kiếm
   };
 
   return (
@@ -138,7 +176,7 @@ const SearchRecipes = () => {
 
       {/* Header Section */}
       <div
-        className="w-full h-[650px] bg-cover bg-center flex items-center justify-start text-[#8c0e2c] px-16 relative"
+        className="w-full h-[500px] bg-cover bg-center flex items-center justify-start text-[#8c0e2c] px-16 relative"
         style={{
           backgroundImage: `url(${SearchBackGround})`,
         }}
@@ -174,15 +212,15 @@ const SearchRecipes = () => {
         <div ref={searchRef}>
           <h2 className="text-3xl font-bold mb-4 text-gray-800">Find Your Recipe: By Ingredients or Dish Name</h2>
           <p className="text-lg text-gray-500 text-center mb-4">Search by ingredients or dish names to explore delicious recipes!</p>
-          <div className="flex w-full max-w-2xl mb-8">
+          <div className="relative flex w-full max-w-2xl mb-8">
             <div className="relative w-full">
               <input
                 type="text"
-                ref={searchInputRef} // Gắn ref vào ô input
+                ref={searchInputRef}
                 className="w-full px-4 py-3 pr-12 border-2 border-pink-100 rounded-3xl focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
                 placeholder="e.g., chicken, tomato, garlic"
                 value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
+                onChange={handleInputChange} // Cập nhật gợi ý khi nhập
               />
               <button
                 onClick={searchRecipes}
@@ -193,6 +231,20 @@ const SearchRecipes = () => {
                 </svg>
               </button>
             </div>
+            {/* Hiển thị gợi ý */}
+            {suggestions.length > 0 && (
+              <ul className="absolute top-full left-0 w-full max-w-2xl bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-800"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
