@@ -277,7 +277,7 @@ const RecipeDetails = () => {
                       <p className="text-sm text-gray-600 mb-2">
                         Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
                       </p>
-                      <div className="flex justify-between items-center ">
+                      <div className="flex justify-between items-center">
                         <Link
                           to={`/recipe/${similarRecipe.id}`}
                           className="px-4 py-2 bg-[#F39AA7] text-gray-800 rounded-full text-sm font-semibold hover:bg-[#f3a4b0]"
