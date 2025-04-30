@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.jpeg";
 import moreIcon from "../assets/more.png";
@@ -9,12 +9,14 @@ import SearchBackGround from "../assets/SearchBackGround.png";
 const SearchRecipes = () => {
   const [searchValue, setSearchValue] = useState("");
   const [recipes, setRecipes] = useState([]);
+  const [recommendedRecipes, setRecommendedRecipes] = useState([]);
   const [error, setError] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const searchRef = useRef(null);
 
   const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
+  // Hàm tìm kiếm công thức dựa trên nguyên liệu
   const searchRecipes = async () => {
     if (!searchValue.trim()) {
       setError("Please enter at least one ingredient or dish name.");
@@ -42,19 +44,31 @@ const SearchRecipes = () => {
     }
   };
 
+  // Lấy danh sách công thức ngẫu nhiên từ API Spoonacular
+  useEffect(() => {
+    const fetchRecommendedRecipes = async () => {
+      try {
+        const response = await fetch(
+          `https://api.spoonacular.com/recipes/random?number=8&apiKey=${apiKey}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setRecommendedRecipes(data.recipes || []);
+      } catch (err) {
+        console.error("Failed to fetch recommended recipes:", err);
+        setRecommendedRecipes([]);
+      }
+    };
+
+    fetchRecommendedRecipes();
+  }, [apiKey]);
+
   const popularIngredients = [
     "tomato", "pork", "onion", "carrot", "scallop", "potato", "vegetarian", "vegan"
-  ];
-
-  const recommendedRecipes = [
-    { id: 1, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 2, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 3, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 4, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 5, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 6, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 7, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
-    { id: 8, title: "Blueberry Milkshake", image: "https://via.placeholder.com/300", calories: 200, fat: 5, carbs: 35 },
   ];
 
   const handleIngredientClick = (ingredient) => {
@@ -185,46 +199,7 @@ const SearchRecipes = () => {
           </div>
         </div>
 
-        {/* Recommended Recipes */}
-        <div className="w-full max-w-6xl mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">RECOMMENDED RECIPES</h3>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {recommendedRecipes.map((recipe) => (
-              <li
-                key={recipe.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-              >
-                <img
-                  src={recipe.image}
-                  alt={recipe.title}
-                  className="w-full h-40 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Approx. {recipe.calories} calories per serving, {recipe.fat}g fat, {recipe.carbs}g carbs.
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <Link
-                      to={`/recipe/${recipe.id}`}
-                      className="px-4 py-2 bg-[#F9B700] text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
-                    >
-                      See Recipe
-                    </Link>
-                    <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                      </svg>
-                      <span className="text-sm">9</span>
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Recipes Grid (for search results) */}
+        {/* Search Results (Moved up) */}
         {recipes.length > 0 && (
           <>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">SEARCH RESULTS</h3>
@@ -241,7 +216,7 @@ const SearchRecipes = () => {
                     className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                   >
                     <img
-                      src={recipe.image}
+                      src={recipe.image || "https://via.placeholder.com/300"}
                       alt={recipe.title}
                       className="w-full h-40 object-cover"
                     />
@@ -271,6 +246,52 @@ const SearchRecipes = () => {
             </ul>
           </>
         )}
+
+        {/* Recommended Recipes (Moved down) */}
+        <div className="w-full max-w-6xl mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">RECOMMENDED RECIPES</h3>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {recommendedRecipes.map((recipe) => {
+              const nutrition = recipe.nutrition?.nutrients || [];
+              const calories = nutrition?.find(n => n.name === "Calories")?.amount || "N/A";
+              const fat = nutrition?.find(n => n.name === "Fat")?.amount || "N/A";
+              const carbs = nutrition?.find(n => n.name === "Carbohydrates")?.amount || "N/A";
+
+              return (
+                <li
+                  key={recipe.id}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                >
+                  <img
+                    src={recipe.image || "https://via.placeholder.com/300"}
+                    alt={recipe.title}
+                    className="w-full h-40 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{recipe.title}</h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Approx. {calories} calories per serving, {fat}g fat, {carbs}g carbs.
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <Link
+                        to={`/recipe/${recipe.id}`}
+                        className="px-4 py-2 bg-[#F9B700] text-gray-800 rounded-full text-sm font-semibold hover:bg-yellow-500"
+                      >
+                        See Recipe
+                      </Link>
+                      <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        <span className="text-sm">9</span>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
 
       {/* Footer */}
