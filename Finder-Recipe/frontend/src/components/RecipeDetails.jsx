@@ -18,9 +18,45 @@ const RecipeDetails = () => {
 
   const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
-  useEffect(() => {
-    console.log("RecipeDetails API Key:", import.meta.env.VITE_SPOONACULAR_API_KEY);
+  const addToWishlist = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        setError("Please log in to add recipes to your wishlist.");
+        return;
+      }
 
+      const token = await user.token;
+      const recipeData = {
+        id: recipe.id,
+        title: recipe.title,
+        image: recipe.image,
+        calories: recipe.nutrition?.nutrients.find(n => n.name === "Calories")?.amount || "N/A",
+        fat: recipe.nutrition?.nutrients.find(n => n.name === "Fat")?.amount || "N/A",
+        carbs: recipe.nutrition?.nutrients.find(n => n.name === "Carbohydrates")?.amount || "N/A",
+      };
+
+      const response = await fetch("http://localhost:3001/api/wishlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(recipeData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add recipe to wishlist");
+      }
+
+      alert("Recipe added to wishlist!");
+    } catch (err) {
+      setError(err.message);
+      console.error("Error adding to wishlist:", err);
+    }
+  };
+
+  useEffect(() => {
     const fetchRecipeDetails = async () => {
       if (!apiKey) {
         setError("API Key is missing. Please check your .env file.");
@@ -28,7 +64,6 @@ const RecipeDetails = () => {
       }
 
       try {
-        // Fetch recipe details
         const response = await fetch(
           `https://api.spoonacular.com/recipes/${id}/information?apiKey=${apiKey}&includeNutrition=true`
         );
@@ -38,7 +73,6 @@ const RecipeDetails = () => {
         const data = await response.json();
         setRecipe(data);
 
-        // Fetch similar recipes
         try {
           const similarResponse = await fetch(
             `https://api.spoonacular.com/recipes/${id}/similar?apiKey=${apiKey}&number=4`
@@ -48,7 +82,6 @@ const RecipeDetails = () => {
             setSimilarRecipes([]);
           } else {
             const similarData = await similarResponse.json();
-            // Fetch nutrition info for each similar recipe
             const similarRecipesWithNutrition = await Promise.all(
               similarData.map(async (similarRecipe) => {
                 const nutritionResponse = await fetch(
@@ -114,6 +147,7 @@ const RecipeDetails = () => {
           <Link to="/features" className="hover:text-gray-600">Features</Link>
           <Link to="/AboutUs" className="hover:text-gray-600">About</Link>
           <Link to="/SearchRecipes" className="hover:text-gray-600">Search</Link>
+          <Link to="/Wishlist" className="hover:text-gray-600">Wishlist</Link>
         </div>
         <div className="hidden md:flex gap-6 text-sm font-medium flex-row">
           <Link to="/login" className="hover:text-gray-600 flex items-center">
@@ -133,6 +167,7 @@ const RecipeDetails = () => {
               <Link to="/product" className="block py-1 hover:text-gray-600">Product</Link>
               <Link to="/features" className="block py-1 hover:text-gray-600">Features</Link>
               <Link to="/AboutUs" className="block py-1 hover:text-gray-600">About</Link>
+              <Link to="/Wishlist" className="hover:text-gray-600">Wishlist</Link>
               <Link to="/SearchRecipes" className="block py-1 hover:text-gray-600">Search</Link>
               <Link to="/login" className="block py-1 hover:text-gray-600">Login via Google</Link>
             </div>
@@ -168,7 +203,10 @@ const RecipeDetails = () => {
                     </div>
                   </div>
                   <div className="flex gap-4">
-                    <button className="flex items-center gap-1 text-gray-600 hover:text-red-600">
+                    <button
+                      onClick={addToWishlist}
+                      className="flex items-center gap-1 text-gray-600 hover:text-red-600"
+                    >
                       <img src={heartIcon} className="w-5 h-5" />
                       <span>Save</span>
                     </button>
@@ -290,7 +328,10 @@ const RecipeDetails = () => {
                           >
                             See Recipe
                           </Link>
-                          <button className="flex items-center gap-1 text-gray-600 hover:text-red-500">
+                          <button
+                            onClick={() => addToWishlist(similarRecipe)}
+                            className="flex items-center gap-1 text-gray-600 hover:text-red-500"
+                          >
                             <svg
                               className="w-5 h-5"
                               fill="none"
@@ -305,7 +346,7 @@ const RecipeDetails = () => {
                                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                               ></path>
                             </svg>
-                            <span className="text-sm">9</span>
+                            <span className="text-sm">Save</span>
                           </button>
                         </div>
                       </div>
