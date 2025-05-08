@@ -8,6 +8,7 @@ import Login from "./components/login";
 import Signup from "./components/signup";
 import SearchRecipes from './components/SearchRecipes';
 import RecipeDetails from './components/RecipeDetails';
+import Wishlist from "./components/Wishlist";
 
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
         <Route path = "/Signup" element = {<Signup />} />
         <Route path = "/SearchRecipes" element = {<SearchRecipes/>}/>
         <Route path="/recipe/:id" element={<RecipeDetails />} />
+        <Route path="/Wishlist" element={<Wishlist />} />
         </Routes>
     </BrowserRouter>
   );
