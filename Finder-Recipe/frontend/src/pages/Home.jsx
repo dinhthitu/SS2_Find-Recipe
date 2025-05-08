@@ -22,6 +22,7 @@ const Home = () => {
               <Link to="/features" className="hover:text-gray-600">Features</Link>
               <Link to="/AboutUs" className="hover:text-gray-600">About</Link>
               <Link to="/SearchRecipes" className="hover:text-gray-600">Search</Link>
+              <Link to="/Wishlist" className="hover:text-gray-600">Wishlist</Link>
             </div>
     
             <div className="hidden md:flex gap-6 text-sm font-medium flex-row">
@@ -46,6 +47,7 @@ const Home = () => {
               <Link to="/AboutUs" className="block py-1 hover:text-gray-900">About</Link>
               <Link to="/login" className="block py-1 hover:text-gray-900">Login via Google</Link>
               <Link to="/SearchRecipes" className="block py-1 hover:text-gray-900">Search Recipe</Link>
+              <Link to="/Wishlist" className="hover:text-gray-600">Wishlist</Link>
             </div>
           )}
         </div>
