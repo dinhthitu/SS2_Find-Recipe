@@ -52,44 +52,43 @@ const AboutUs = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-800">
       {/* Navbar */}
-            <div className="flex items-center justify-between px-4 py-4 relative bg-white border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <img src={logo} alt="Logo" className="w-10 h-10" />
-                <span className="font-bold text-sm text-gray-800">RECIPE FINDER</span>
-              </div>
-      
-              <div className="hidden md:flex gap-6 text-sm font-medium">
-                <Link to="/product" className="hover:text-gray-600">Product</Link>
-                <Link to="/features" className="hover:text-gray-600">Features</Link>
-                <Link to="/AboutUs" className="hover:text-gray-600">About</Link>
-                <Link to="/SearchRecipes" className="hover:text-gray-600">Search</Link>
-              </div>
-      
-              <div className="hidden md:flex gap-6 text-sm font-medium flex-row">
-                <Link to="/login" className="hover:text-gray-600 flex items-center">
-                  Login via Google
-                  <img src={arrowIcon} className="w-4 h-5 ml-1" />
-                </Link>
-              </div>
-      
-              <div className="md:hidden relative">
-                <img
-                  src={showMenu ? closeIcon : moreIcon}
-                  alt="More"
-                  className="w-8 h-8 cursor-pointer"
-                  onClick={() => setShowMenu(!showMenu)}
-                />
-                {showMenu && (
-                  <div className="fixed right-0 w-1/2 min-h-screen bg-white shadow-lg z-50 p-6 flex flex-col gap-4 font-bold transition-all duration-300 ease-in-out">
-                    <Link to="/product" className="block py-1 hover:text-gray-600">Product</Link>
-                    <Link to="/features" className="block py-1 hover:text-gray-600">Features</Link>
-                    <Link to="/AboutUs" className="block py-1 hover:text-gray-600">About</Link>
-                    <Link to="/SearchRecipes" className="block py-1 hover:text-gray-600">Search</Link>
-                    <Link to="/login" className="block py-1 hover:text-gray-600">Login via Google</Link>
-                  </div>
-                )}
-              </div>
+      <div className="flex items-center justify-between px-4 py-4 relative bg-white border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="Logo" className="w-10 h-10" />
+          <span className="font-bold text-sm text-gray-800">RECIPE FINDER</span>
+        </div>
+        <div className="hidden md:flex gap-6 text-sm font-medium">
+          <Link to="/product" className="hover:text-gray-600">Product</Link>
+          <Link to="/features" className="hover:text-gray-600">Features</Link>
+          <Link to="/AboutUs" className="hover:text-gray-600">About</Link>
+          <Link to="/SearchRecipes" className="hover:text-gray-600">Search</Link>
+          <Link to="/Wishlist" className="hover:text-gray-600">Wishlist</Link>
+        </div>
+        <div className="hidden md:flex gap-6 text-sm font-medium flex-row">
+          <Link to="/login" className="hover:text-gray-600 flex items-center">
+            Login via Google
+            <img src={arrowIcon} className="w-4 h-5 ml-1" />
+          </Link>
+        </div>
+        <div className="md:hidden relative">
+          <img
+            src={showMenu ? closeIcon : moreIcon}
+            alt="More"
+            className="w-8 h-8 cursor-pointer"
+            onClick={() => setShowMenu(!showMenu)}
+          />
+          {showMenu && (
+            <div className="fixed right-0 w-1/2 min-h-screen bg-white shadow-lg z-50 p-6 flex flex-col gap-4 font-bold transition-all duration-300 ease-in-out">
+              <Link to="/product" className="block py-1 hover:text-gray-600">Product</Link>
+              <Link to="/features" className="block py-1 hover:text-gray-600">Features</Link>
+              <Link to="/AboutUs" className="block py-1 hover:text-gray-600">About</Link>
+              <Link to="/Wishlist" className="hover:text-gray-600">Wishlist</Link>
+              <Link to="/SearchRecipes" className="block py-1 hover:text-gray-600">Search</Link>
+              <Link to="/login" className="block py-1 hover:text-gray-600">Login via Google</Link>
             </div>
+          )}
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section className="w-full bg-[#B8324F] flex flex-col items-center text-white px-6 md:px-16 py-16">
