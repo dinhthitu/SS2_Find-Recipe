@@ -9,7 +9,7 @@ import Signup from './pages/signup';
 import SearchRecipes from './pages/SearchRecipes';
 import RecipeDetails from './pages/RecipeDetails';
 import AdminDashboard from './pages/AdminDashboard';
-import Wishlist from './pages/Wishlist'; // Thêm thành phần Wishlist
+import ManageRecipes from './pages/ManageRecipes';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { auth } from './firebase';
@@ -29,7 +29,7 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
-  const isAdminRoute = location.pathname === '/admin';
+  const isAdminRoute = location.pathname === '/admin' || location.pathname.startsWith('/manage-recipes') || location.pathname === '/admin/create';
 
   return (
     <>
@@ -43,8 +43,8 @@ const App = () => {
         <Route path="/Signup" element={<Signup />} />
         <Route path="/SearchRecipes" element={<SearchRecipes />} />
         <Route path="/recipe/:id" element={<RecipeDetails />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/wishlist" element={<Wishlist />} /> {/* Thêm route cho Wishlist */}
+        <Route path="/admin/*" element={<AdminDashboard />} />
+        <Route path="/manage-recipes/:userId" element={<ManageRecipes />} />
       </Routes>
       {!isAdminRoute && <Footer />}
     </>
